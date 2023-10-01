@@ -12,6 +12,8 @@ Note:
 Configuring .env:
     CONDA_ENVS: the path storing venv 
     BASH_SCRIPT_PATH: the path of the bash script storing all commands
+    CSV_SOURCE: the csv path of the list of bash functions
+    BASH_SOURCE: the bash source file path
 """
 
 import argparse
@@ -184,9 +186,11 @@ def main():
     command_name = os.path.basename(args.file)
     command_name = command_name[: command_name.index(".py")]
 
-    new_function_line = f"function {command_name}() {{{exec_file_path} $@}}"
+    new_function_line = f"function {command_name}() {{{exec_file_path} $@}}\n"
 
-    cmd_bools = [f"{command_name}()" in i for i in bash_lines]
+    cmd_bools = [
+        f"{command_name}()" in i for i in bash_lines
+    ]  # True if the new function already exists
 
     if True in cmd_bools:
         cmd_idx = cmd_bools.index(True)  # index of the command in the bash script
@@ -209,6 +213,26 @@ def main():
             new_desc=args.desc,
             new_function_line=new_function_line,
         )
+
+    # Update the command csv
+    subprocess.run(
+        [
+            os.path.join(PWD, "cmd-add"),
+            "-n",
+            command_name,
+            "-f",
+            args.file,
+            "-d",
+            args.desc[2:-2]
+            if args.desc
+            else "NO_UPDATE",  # [2:] to escape the '# ' at the beginning and '\n' at the end
+        ]
+    )
+
+    # Source the bash source file to refresh env
+    subprocess.run(
+        [os.path.join(PWD, "source.sh"), os.path.expanduser(os.getenv("BASH_SOURCE"))]
+    )
 
 
 if __name__ == "__main__":
