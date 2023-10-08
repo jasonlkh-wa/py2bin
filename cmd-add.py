@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 import os
 import argparse
-import sys
 
 
 def create_dirs_and_file_if_not_exists(file: str):
@@ -44,7 +43,7 @@ def update_item_if_exists(csv_path: str, new_cmd, new_file, new_description):
                     print(f"{description} -> {new_description}")
 
                 if input("\nOverwrite the exists command y/[n]?") == "y":
-                    csv_lines[i] = ",".join([new_cmd, new_file, new_description])
+                    csv_lines[i] = f'"{new_cmd}","{new_file}","{new_description}"'
 
                     # Write the csv with changes
                     with open(csv_path, "w") as f:
