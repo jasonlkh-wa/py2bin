@@ -1,5 +1,5 @@
 """
-Add a bash function to a file to run a python file (*For anaconda/miniconda users only)
+Add a shell function to a file to run a python file (*For anaconda/miniconda users only)
 
 How to use this command:
 1. Activate the desired conda virtual environment.
@@ -11,9 +11,8 @@ Note:
 
 Configuring .env:
     CONDA_ENVS: the path storing venv 
-    BASH_SCRIPT_PATH: the path of the bash script storing all commands
-    CSV_SOURCE: the csv path of the list of bash functions
-    BASH_SOURCE: the bash source file path
+    SHELL_SCRIPT_PATH: the path of the shell script storing all commands
+    CSV_SOURCE: the csv path of the list of shell functions
 """
 
 import argparse
@@ -83,55 +82,55 @@ def create_exec_copy(py_file: str, shebang_line: str):
     return process.returncode
 
 
-def update_bash_function_and_description(
-    bash_script, bash_lines, cmd_idx, command_name, new_desc, new_function_line
+def update_shell_function_and_description(
+    SHELL_SCRIPT, shell_lines, cmd_idx, command_name, new_desc, new_function_line
 ):
     desc_change_consent = "n"
-    if new_desc and bash_lines[cmd_idx - 1] != new_desc:
+    if new_desc and shell_lines[cmd_idx - 1] != new_desc:
         desc_change_consent = input(
-            f"\nUpdating from\n{bash_lines[cmd_idx - 1]}\nto\n{new_desc}\n"
+            f"\nUpdating from\n{shell_lines[cmd_idx - 1]}\nto\n{new_desc}\n"
             + "Please confirm the change y/[n]: "
         )
         if desc_change_consent != "y":
             print("Description remains unchanged.")
         else:
-            old_desc = bash_lines[cmd_idx - 1]
-            bash_lines[cmd_idx - 1] = new_desc
+            old_desc = shell_lines[cmd_idx - 1]
+            shell_lines[cmd_idx - 1] = new_desc
             print("Description will be changed")
 
     # Update current command if the user consents
     cmd_change_consent = "n"
-    if bash_lines[cmd_idx] != new_function_line:
+    if shell_lines[cmd_idx] != new_function_line:
         cmd_change_consent = input(
-            f"\nUpdating from\n{bash_lines[cmd_idx]}\nto\n{new_function_line}\n"
+            f"\nUpdating from\n{shell_lines[cmd_idx]}\nto\n{new_function_line}\n"
             + "\nPlease confirm the change y/[n]: "
         )
         if cmd_change_consent != "y":
             print("Exiting without updating the function")
         else:
-            old_function_line = bash_lines[cmd_idx]
-            bash_lines[cmd_idx] = new_function_line
+            old_function_line = shell_lines[cmd_idx]
+            shell_lines[cmd_idx] = new_function_line
             print("Command will be updated")
 
-    with open(bash_script, "w") as f:
-        f.write("".join(bash_lines))
+    with open(SHELL_SCRIPT, "w") as f:
+        f.write("".join(shell_lines))
     print(
         f"\nCommand <{command_name}> udpated:\nDescription changed? {'No' if desc_change_consent != 'y' else (old_desc + ' -> ' + new_desc)}\
             \nCommand updated? {'No' if cmd_change_consent != 'y' else (old_function_line + ' -> ' + new_function_line)}"
     )
 
 
-def insert_new_bash_function_and_description(
-    bash_script, bash_lines, command_name, new_desc, new_function_line
+def insert_new_shell_function_and_description(
+    SHELL_SCRIPT, shell_lines, command_name, new_desc, new_function_line
 ):
-    bash_lines.append("\n")
-    bash_lines.append(
+    shell_lines.append("\n")
+    shell_lines.append(
         "# Please add command description\n" if not new_desc else new_desc
     )
-    bash_lines.append(new_function_line)
+    shell_lines.append(new_function_line)
 
-    with open(bash_script, "w") as f:
-        f.write("".join(bash_lines))
+    with open(SHELL_SCRIPT, "w") as f:
+        f.write("".join(shell_lines))
 
     print(
         f"\nNew command <{command_name}> added successfully!"
@@ -175,13 +174,13 @@ def main():
     else:
         sys.exit("The exec file is not created. Exiting without any changes made")
 
-    # Update the bash function script
-    bash_script = os.path.expanduser(os.getenv("BASH_SCRIPT_PATH"))
-    create_dirs_and_file_if_not_exists(bash_script)
+    # Update the shell function script
+    SHELL_SCRIPT = os.path.expanduser(os.getenv("SHELL_SCRIPT_PATH"))
+    create_dirs_and_file_if_not_exists(SHELL_SCRIPT)
 
-    # Get bash script content
-    with open(bash_script, "r") as f:
-        bash_lines = f.readlines()
+    # Get shell script content
+    with open(SHELL_SCRIPT, "r") as f:
+        shell_lines = f.readlines()
 
     command_name = os.path.basename(args.file)
     command_name = command_name[: command_name.index(".py")]
@@ -189,15 +188,15 @@ def main():
     new_function_line = f"function {command_name}() {{{exec_file_path} $@}}\n"
 
     cmd_bools = [
-        f"{command_name}()" in i for i in bash_lines
+        f"{command_name}()" in i for i in shell_lines
     ]  # True if the new function already exists
 
     if True in cmd_bools:
-        cmd_idx = cmd_bools.index(True)  # index of the command in the bash script
+        cmd_idx = cmd_bools.index(True)  # index of the command in the shell script
 
-        update_bash_function_and_description(
-            bash_script=bash_script,
-            bash_lines=bash_lines,
+        update_shell_function_and_description(
+            SHELL_SCRIPT=SHELL_SCRIPT,
+            shell_lines=shell_lines,
             cmd_idx=cmd_idx,
             command_name=command_name,
             new_desc=args.desc,
@@ -206,9 +205,9 @@ def main():
 
     else:
         # Insert new command if it does not exist
-        insert_new_bash_function_and_description(
-            bash_script=bash_script,
-            bash_lines=bash_lines,
+        insert_new_shell_function_and_description(
+            SHELL_SCRIPT=SHELL_SCRIPT,
+            shell_lines=shell_lines,
             command_name=command_name,
             new_desc=args.desc,
             new_function_line=new_function_line,
@@ -227,11 +226,6 @@ def main():
             if args.desc
             else "NO_UPDATE",  # [2:] to escape the '# ' at the beginning and '\n' at the end
         ]
-    )
-
-    # Source the bash source file to refresh env
-    subprocess.run(
-        [os.path.join(PWD, "source.sh"), os.path.expanduser(os.getenv("BASH_SOURCE"))]
     )
 
 

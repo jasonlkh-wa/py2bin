@@ -1,4 +1,3 @@
-#!/bin/zsh
 py_file_full_path=$1
 py2bin_temp=$2
 
