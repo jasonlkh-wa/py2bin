@@ -1,5 +1,3 @@
-#!/bin/bash
-
 parent_dir=$(dirname "$(readlink -f "$0")")
 
 # create the function list csv
