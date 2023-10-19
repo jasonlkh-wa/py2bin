@@ -65,6 +65,11 @@ def create_dirs_and_file_if_not_exists(file: str):
         print(f"\nFile {file} does not exist, created one successfully.")
 
 
+def create_exec_name(x: str) -> str:
+    x = x.replace("_", "-").replace(" ", "-")
+    return x[:-3]  # rempve .py
+
+
 def create_exec_copy(py_file: str, shebang_line: str):
     # Create file copy and insert the shebang line to the beginning of it
     with open(py_file, "r") as f:
@@ -76,7 +81,13 @@ def create_exec_copy(py_file: str, shebang_line: str):
 
         # Create a exec copy of the input file
         process = subprocess.run(
-            ["sudo", os.path.join(PWD, "create_exec_copy.sh"), py_file, f.name]
+            [
+                "sudo",
+                os.path.join(PWD, "create_exec_copy.sh"),
+                py_file,
+                f.name,
+                create_exec_name(py_file),
+            ]
         )
 
     return process.returncode

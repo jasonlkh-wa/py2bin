@@ -5,9 +5,10 @@
 test2
 test2.py
 .vscode/settings.json
-resources/cmd_.csv
+resources/cmd.csv
 py2bin
 cmd-add
+.DS_Store
 
 ### Executable ###
 *.app

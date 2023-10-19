@@ -1,7 +1,6 @@
 py_file_full_path=$1
 py2bin_temp=$2
-
-new_exec_file="${py_file_full_path%???}"
+new_exec_file=$3
 
 # Check if the destination file already exists
 if [ -e "$new_exec_file" ]; then

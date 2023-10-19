@@ -2,7 +2,7 @@ parent_dir=$(dirname "$(readlink -f "$0")")
 
 # create the function list csv
 csv_path="$parent_dir/resources/cmd.csv"
-echo "cmd,file,description" >"$csv_path"
+echo "cmd,file,description" >>"$csv_path"
 
 # create the shell script path
 shell_script_path="$parent_dir/shell-scripts/custom-commands.sh"
@@ -11,7 +11,7 @@ touch "$shell_script_path"
 
 # rename example.env to .env
 env_path="$parent_dir/.env"
-cp "$parent_dir/example.env" "$env_path"
+cp -i "$parent_dir/example.env" "$env_path"
 
 # replace the configuration in .env
 csv_line_number=3
