@@ -180,7 +180,7 @@ def main():
     # Create exec copy in target directory
     process_return_code = create_exec_copy(args.file, shebang_line)
     if process_return_code == 0:
-        exec_file_path = args.file[:-3]
+        exec_file_path = create_exec_name(args.file)
         print(f"Exec file created at {exec_file_path} successfully!")
     else:
         sys.exit("The exec file is not created. Exiting without any changes made")
@@ -193,8 +193,7 @@ def main():
     with open(SHELL_SCRIPT, "r") as f:
         shell_lines = f.readlines()
 
-    command_name = os.path.basename(args.file)
-    command_name = command_name[: command_name.index(".py")]
+    command_name = os.path.basename(create_exec_name(args.file))
 
     new_function_line = f"function {command_name}() {{{exec_file_path} $@}}\n"
 
