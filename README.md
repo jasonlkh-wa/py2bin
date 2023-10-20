@@ -18,10 +18,44 @@ _The tool currently only supports Anaconda user._
 To install py2bin, you can follow these steps:
 
 1. Clone the py2bin repository from GitHub
+
+```shell
+git clone <github-repo-link>
+```
+
 2. Navigate to the cloned directory.
 3. Run the setup script: `./setup.sh`
-4. Install the required packages in environment.yml
-5. Configure the conda environments path in .env
+4. Configure the conda environments path in .env
+
+```shell
+# Example
+CONDA_ENVS="~/opt/miniconda3/envs"
+```
+
+5. Create a conda venv with the required packages in environment.yml
+
+```shell
+conda env create --file environment.yml
+```
+
+6. Run the following command to initiate py2bin, cmd and cmd-add
+
+```shell
+# Initiate py2bin
+# example path of py2bin: ~/python-project/py2bin/py2bin.py
+python py2bin.py <full path of py2bin.py> -d "Convert py file to exec with py2bin"
+
+# Initiate cmd-add (py2bin is set up)
+# example path of cmd-add: ~/python-project/py2bin/cmd-add.py
+py2bin <full path of cmd-add.py> -d "Add new function to py2bin's command list"
+```
+
+Lastly, add this line to py2bin/shell-scripts/custom-command.sh
+
+```shell
+# View all commands
+function cmd() {<conda venv path>/bin/csvlook <py2bin path>/resources/cmd.csv}
+```
 
 ## Usage
 
@@ -29,7 +63,7 @@ Once installed and completed the setup, you can start using py2bin with the foll
 
 1. Convert a Python file to an Executable:
 
-    ```
+    ```shell
     py2bin [path/to/python_file.py] -d <optional description>
     ```
 
@@ -39,12 +73,10 @@ Once installed and completed the setup, you can start using py2bin with the foll
     cmd
     ```
 
-### demo screenshot ...
-
-3. Add other customized shell functions to the list:
+3. Manually add non-python function to the py2bin's track list
 
     ```
-    cmd-add -n <name> -f <the script location> -d <description>
+    cmd-add -n <name of function> -f <reference file path> -d <description>
     ```
 
 ## Contributing
@@ -54,7 +86,3 @@ Contributions to py2bin are welcome! If you encounter any issues or have suggest
 ## License
 
 This project is licensed under the MIT License
-
-## Acknowledgments
-
--   [List any acknowledgments or references to external libraries/frameworks used in your project]

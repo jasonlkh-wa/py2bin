@@ -8,6 +8,7 @@ test2.py
 resources/cmd.csv
 py2bin
 cmd-add
+todo.md
 .DS_Store
 
 ### Executable ###
