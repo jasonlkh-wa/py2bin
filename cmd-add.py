@@ -67,7 +67,6 @@ def main():
     # Load .env
     PWD = os.path.dirname(__file__)
     load_dotenv(os.path.join(PWD, ".env"))
-    print(os.getenv("CSV_SOURCE"))
     cmd_csv = os.path.expanduser(os.getenv("CSV_SOURCE"))
 
     # Cli argument parser

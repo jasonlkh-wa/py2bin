@@ -21,6 +21,7 @@ from dotenv import load_dotenv
 import sys
 import subprocess
 import tempfile
+import re
 
 
 def configure_and_run_arg_parser():
@@ -140,7 +141,7 @@ def insert_new_shell_function_and_description(
     )
     shell_lines.append(new_function_line)
 
-    with open(SHELL_SCRIPT, "w") as f:
+    with open(SHELL_SCRIPT, "a") as f:
         f.write("".join(shell_lines))
 
     print(
@@ -198,7 +199,7 @@ def main():
     new_function_line = f"function {command_name}() {{{exec_file_path} $@}}\n"
 
     cmd_bools = [
-        f"{command_name}()" in i for i in shell_lines
+        bool(re.search(rf"\b{command_name}\(\)", i)) for i in shell_lines
     ]  # True if the new function already exists
 
     if True in cmd_bools:
@@ -232,7 +233,7 @@ def main():
             "-f",
             args.file,
             "-d",
-            args.desc[2:-2]
+            args.desc[2:-1]
             if args.desc
             else "NO_UPDATE",  # [2:] to escape the '# ' at the beginning and '\n' at the end
         ]
