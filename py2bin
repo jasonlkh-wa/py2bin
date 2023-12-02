@@ -1,3 +1,4 @@
+#!/Users/jason/opt/miniconda3/envs/tfbase/bin/python3.10
 """
 Add a shell function to a file to run a python file (*For anaconda/miniconda users only)
 

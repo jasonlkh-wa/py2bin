@@ -6,7 +6,6 @@ test2
 test2.py
 .vscode/settings.json
 resources/cmd.csv
-py2bin
 cmd-add
 todo.md
 .DS_Store
