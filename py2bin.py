@@ -33,6 +33,10 @@ def configure_and_run_arg_parser():
         "-d", "--desc", type=str, help="Optional description argument", required=False
     )
 
+    parser.add_argument(
+        "--dotenv", type=str, help="<Optional> custom .env file path]", required=False
+    )
+
     args = parser.parse_args()
 
     # Raise error for non-python file
@@ -81,6 +85,7 @@ def create_exec_copy(py_file: str, shebang_line: str):
         f.flush()
 
         # Create a exec copy of the input file
+        # CR-someday use shutil to copy instead for stability and flexibility
         process = subprocess.run(
             [
                 "sudo",
@@ -155,13 +160,16 @@ def insert_new_shell_function_and_description(
 
 
 def main():
+    # Cli argument parser
+    args = configure_and_run_arg_parser()
+
     # Project directory and .env setup
     global PWD
     PWD = os.path.dirname(__file__)
-    load_dotenv(os.path.join(PWD, ".env"))
-
-    # Cli argument parser
-    args = configure_and_run_arg_parser()
+    if args.dotenv:
+        load_dotenv(args.dotenv)
+    else:
+        load_dotenv(os.path.join(PWD, ".env"))
 
     # Check the activated conda environment
     if conda_env := os.getenv("CONDA_DEFAULT_ENV"):
