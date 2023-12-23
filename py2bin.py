@@ -30,12 +30,37 @@ def configure_and_run_arg_parser():
     )
     parser.add_argument("file", type=str, help="The target python file")
     parser.add_argument(
-        "-d", "--desc", type=str, help="Optional description argument", required=False
+        "-d",
+        "--desc",
+        type=str,
+        help="Optional description argument",
+        required=False,
     )
 
     parser.add_argument(
-        "--dotenv", type=str, help="<Optional> custom .env file path]", required=False
+        "--dotenv",
+        type=str,
+        help="<Optional> custom .env file path",
+        required=False,
     )
+
+    # CR-someday: add subparsers for flexibility
+    # [ ] subparser add -> this is for the existing args
+    # [ ] subparser update -> this only serves the reloading of existing command, only reload the exec file
+    #                         do not allow more changes, the user should use add to handle description update
+    # This subparser is used for updating the existing command by generating a new exec
+    # subparsers = parser.add_subparsers(
+    #     dest="update",
+    #     required=False,
+    #     description="Subcommands",
+    #     help="Update existing command help",
+    # )
+    # update_cmd_subparser = subparsers.add_parser(
+    #     "test_me", help="Update existing command PARSER"
+    # )
+    # update_cmd_subparser.add_argument(
+    #     "command", type=str, help="the command to be updated"
+    # )
 
     args = parser.parse_args()
 
