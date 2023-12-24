@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import os
 import argparse
+import whelper
 
 
 def create_dirs_and_file_if_not_exists(file: str):
@@ -68,6 +69,10 @@ def main():
     PWD = os.path.dirname(__file__)
     load_dotenv(os.path.join(PWD, ".env"))
     cmd_csv = os.path.expanduser(os.getenv("CSV_SOURCE"))
+
+    # Create a backup of the current csv file
+    cmd_csv_dir = os.path.dirname(cmd_csv)
+    whelper.backup_directory_with_timestamp(cmd_csv_dir, ignore_hidden=True)
 
     # Cli argument parser
     parser = argparse.ArgumentParser(description="Adding new item to command list csv")

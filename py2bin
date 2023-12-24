@@ -16,7 +16,7 @@ Configuring .env:
     CSV_SOURCE: the csv path of the list of shell functions
 """
 
-import argparse
+import whelper
 import os
 from dotenv import load_dotenv
 import sys
@@ -264,6 +264,10 @@ def main():
     # Update the shell function script
     SHELL_SCRIPT = os.path.expanduser(os.getenv("SHELL_SCRIPT_PATH"))
     create_dirs_and_file_if_not_exists(SHELL_SCRIPT)
+
+    # Backup shell script directory
+    shell_script_dir = os.path.dirname(SHELL_SCRIPT)
+    whelper.backup_directory_with_timestamp(shell_script_dir, ignore_hidden=True)
 
     # Get shell script content
     with open(SHELL_SCRIPT, "r") as f:
