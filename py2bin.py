@@ -22,57 +22,55 @@ import sys
 import subprocess
 import tempfile
 import re
+import main_arg_parser
 
 
 def configure_and_run_arg_parser():
-    parser = argparse.ArgumentParser(
-        description="Create a exec file for python file to run in CLI as a command"
+    # parser = argparse.ArgumentParser(
+    #     description="Create a exec file for python file to run in CLI as a command"
+    # )
+
+    parser = main_arg_parser.MainArgParser(
+        prog="py2bin", subparser_description="py2bin actions"
     )
-    parser.add_argument("file", type=str, help="The target python file")
-    parser.add_argument(
+
+    subparser_add = parser.subparsers.add_parser(
+        "add",
+        help="add a new python-based command",
+        description="Add a new python-based command",
+    )
+
+    subparser_update = parser.subparsers.add_parser(
+        "update",
+        help="update an existing py2bin command by regenerating the exec file",
+        description="Update an existing py2bin command by regenerating the exec file",
+    )
+
+    subparser_add.add_argument("file", type=str, help="The target python file")
+    subparser_add.add_argument(
         "-d",
         "--desc",
         type=str,
-        help="Optional description argument",
+        help="<Optional> description argument",
         required=False,
     )
 
-    parser.add_argument(
+    subparser_add.add_argument(
         "--dotenv",
         type=str,
-        help="<Optional> custom .env file path",
+        help="<Optional> custom .env file path, for testing only",
         required=False,
     )
 
     # CR-someday: add subparsers for flexibility
-    # [ ] subparser add -> this is for the existing args
+    # [x] subparser add -> this is for the existing args
     # [ ] subparser update -> this only serves the reloading of existing command, only reload the exec file
     #                         do not allow more changes, the user should use add to handle description update
     # This subparser is used for updating the existing command by generating a new exec
-    # subparsers = parser.add_subparsers(
-    #     dest="update",
-    #     required=False,
-    #     description="Subcommands",
-    #     help="Update existing command help",
-    # )
-    # update_cmd_subparser = subparsers.add_parser(
-    #     "test_me", help="Update existing command PARSER"
-    # )
-    # update_cmd_subparser.add_argument(
-    #     "command", type=str, help="the command to be updated"
-    # )
 
-    args = parser.parse_args()
+    subparser_update.add_argument("command", type=str, help="the command to be updated")
 
-    # Raise error for non-python file
-    if not args.file.endswith(".py"):
-        sys.exit("Please select a python file!")
-
-    # Add '# ' to description
-    if args.desc:
-        args.desc = f"# {args.desc}\n"
-
-    return args
+    return parser.parse_args()
 
 
 def add_shebang_line_to_file_top(file: str, shebang_line: str):
@@ -100,7 +98,18 @@ def create_exec_name(x: str) -> str:
     return x[:-3]  # rempve .py
 
 
-def create_exec_copy(py_file: str, shebang_line: str):
+def create_exec_copy(
+    py_file: str,
+    conda_env: str,
+):
+    # Construct the shebang line
+    conda_envs_path = os.path.expanduser(os.getenv("CONDA_ENVS"))
+    shebang_line = "#!" + os.path.join(
+        conda_envs_path,
+        conda_env,
+        f"bin/python{sys.version_info.major}.{sys.version_info.minor}",
+    )
+
     # Create file copy and insert the shebang line to the beginning of it
     with open(py_file, "r") as f:
         file_content = f.read()
@@ -121,7 +130,14 @@ def create_exec_copy(py_file: str, shebang_line: str):
             ]
         )
 
-    return process.returncode
+    # Create exec copy in target directory
+    if process.returncode == 0:
+        exec_file_path = create_exec_name(py_file)
+        print(f"Exec file created at {exec_file_path} successfully!")
+    else:
+        sys.exit("The exec file is not created. Exiting without any changes made")
+
+    return exec_file_path
 
 
 def update_shell_function_and_description(
@@ -184,13 +200,51 @@ def insert_new_shell_function_and_description(
         print('\nPlease add the new command to track list via "cmd-add"')
 
 
+def update_command(command: str):
+    command = command.strip()
+    load_dotenv(os.path.join(PWD, ".env"))
+    with open(os.path.expanduser(os.getenv("CSV_SOURCE")), "r") as f:
+        csv_lines = f.readlines()
+        for line in csv_lines:
+            line = line.split(",")
+
+            if line[0].strip('"') == command:
+                py_file_location = line[1].strip('"')
+
+                conda_env = os.getenv("CONDA_DEFAULT_ENV")
+                create_exec_copy(py_file_location, conda_env)
+                print(
+                    f"Exec file regenerated at <{create_exec_name(py_file_location)}> with <{conda_env}> env"
+                )
+                return None
+
+    raise ValueError(f"Command {command} not found in {os.getenv('CSV_SOURCE')}")
+
+
 def main():
+    global PWD
+    PWD = os.path.dirname(__file__)
     # Cli argument parser
     args = configure_and_run_arg_parser()
 
-    # Project directory and .env setup
-    global PWD
-    PWD = os.path.dirname(__file__)
+    match args.action:
+        case "add":
+            # Raise error for non-python file
+            if not args.file.endswith(".py"):
+                sys.exit("Please select a python file!")
+            # Add '# ' to description
+            if args.desc:
+                args.desc = f"# {args.desc}\n"
+            if os.path.basename(create_exec_name(args.file)) == "cmd":
+                raise ValueError("Please do not use cmd as command name")
+
+        case "update":
+            update_command(command=args.command)
+            return None
+        case _:
+            raise ValueError(f"Invalid action: {args.action}, run with -h for help.")
+
+    # Load .env setup
     if args.dotenv:
         load_dotenv(args.dotenv)
     else:
@@ -203,21 +257,8 @@ def main():
         print("This program is only compatible to Anaconda users!")
         sys.exit(1)
 
-    # Construct the shebang line
-    conda_envs_path = os.path.expanduser(os.getenv("CONDA_ENVS"))
-    shebang_line = "#!" + os.path.join(
-        conda_envs_path,
-        conda_env,
-        f"bin/python{sys.version_info.major}.{sys.version_info.minor}",
-    )
-
     # Create exec copy in target directory
-    process_return_code = create_exec_copy(args.file, shebang_line)
-    if process_return_code == 0:
-        exec_file_path = create_exec_name(args.file)
-        print(f"Exec file created at {exec_file_path} successfully!")
-    else:
-        sys.exit("The exec file is not created. Exiting without any changes made")
+    exec_file_path = create_exec_copy(args.file, conda_env)
 
     # Update the shell function script
     SHELL_SCRIPT = os.path.expanduser(os.getenv("SHELL_SCRIPT_PATH"))

@@ -40,6 +40,7 @@ CSV_SOURCE={csv_path}"""
             [
                 "python",
                 f"{PWD}/py2bin.py",
+                "add",
                 str(temp_py_file),
                 "-d",
                 "sample description",
@@ -52,15 +53,15 @@ CSV_SOURCE={csv_path}"""
             assert (
                 file.read()
                 == """
-    # sample description
-    function sample() {/Users/jason/python-project/cli-tools/py2bin/tmp/sample $@}
-    """
+# sample description
+function sample() {/Users/jason/python-project/cli-tools/py2bin/tmp/sample $@}
+"""
             )
         with open(csv_path, "r") as file:
             assert (
                 file.read()
                 == '''cmd,file,description
-    "sample","/Users/jason/python-project/cli-tools/py2bin/tmp/sample.py","sample description"'''
+"sample","/Users/jason/python-project/cli-tools/py2bin/tmp/sample.py","sample description"'''
             )
     finally:
         subprocess.run(["rm", "-rf", temp_path])
