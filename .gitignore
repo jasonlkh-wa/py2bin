@@ -2,14 +2,13 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode,executable
 
 # Customized ignore
-test2
-test2.py
 .vscode/settings.json
 resources/
 shell-scripts/
 cmd-add
 todo.md
 .DS_Store
+py2bin
 
 ### Executable ###
 *.app
