@@ -14,7 +14,9 @@ Configuring .env:
     SHELL_SCRIPT_PATH: the path of the shell script storing all commands
     CSV_SOURCE: the csv path of the list of shell functions
 """
-
+# CR: solve the weird insert in csv, one possbile solution would be reading the whole csv in list
+# do any changes and join with "\n" 
+# CR-soon: review the shell script insert to see if there is a better way to change the command
 import whelper
 import os
 from dotenv import load_dotenv
@@ -61,12 +63,6 @@ def configure_and_run_arg_parser():
         help="<Optional> custom .env file path, for testing only",
         required=False,
     )
-
-    # CR-someday: add subparsers for flexibility
-    # [x] subparser add -> this is for the existing args
-    # [ ] subparser update -> this only serves the reloading of existing command, only reload the exec file
-    #                         do not allow more changes, the user should use add to handle description update
-    # This subparser is used for updating the existing command by generating a new exec
 
     subparser_update.add_argument("command", type=str, help="the command to be updated")
 
@@ -119,7 +115,7 @@ def create_exec_copy(
         f.flush()
 
         # Create a exec copy of the input file
-        # CR-someday use shutil to copy instead for stability and flexibility
+        # CR-soon use shutil to copy instead for stability and flexibility
         process = subprocess.run(
             [
                 "sudo",
@@ -311,9 +307,9 @@ def main():
             "-f",
             args.file,
             "-d",
-            args.desc[2:-1]
-            if args.desc
-            else "NO_UPDATE",  # [2:] to escape the '# ' at the beginning and '\n' at the end
+            (
+                args.desc[2:-1] if args.desc else "NO_UPDATE"
+            ),  # [2:] to escape the '# ' at the beginning and '\n' at the end
         ]
     )
 
